@@ -6,7 +6,6 @@ use Dcat\Admin\Form\Field;
 use Dcat\Admin\Support\Helper;
 use Dcat\Admin\Widgets\Checkbox as WidgetCheckbox;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Arr;
 
 class Tree extends Field
 {
@@ -46,6 +45,8 @@ class Tree extends Field
 
     protected $readOnly = false;
 
+    protected $rootParentId = 0;
+
     /**
      * @param array|Arrayable|\Closure $data exp:
      *                                       {
@@ -78,6 +79,13 @@ class Tree extends Field
     public function exceptParentNode(bool $value = true)
     {
         $this->exceptParents = $value;
+
+        return $this;
+    }
+
+    public function rootParentId($id)
+    {
+        $this->rootParentId = $id;
 
         return $this;
     }
@@ -139,7 +147,7 @@ class Tree extends Field
             }
 
             $parentId = $v[$parentColumn] ?? '#';
-            if (empty($parentId)) {
+            if (empty($parentId) || $parentId == $this->rootParentId) {
                 $parentId = '#';
             } else {
                 $parentIds[] = $parentId;
@@ -213,7 +221,7 @@ class Tree extends Field
 
     protected function formatFieldData($data)
     {
-        return Helper::array(Arr::get($data, $this->normalizeColumn()), true);
+        return Helper::array($this->getValueFromData($data), true);
     }
 
     protected function prepareInputValue($value)
